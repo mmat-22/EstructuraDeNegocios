@@ -1,0 +1,53 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Consulta de Productores</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Barra superior -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo-dot"></span>
+      <span class="brand-text">Nación Seguros</span>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Card de filtros/acciones -->
+    <section class="card controls">
+      <h1>Consulta de Productores</h1>
+      <div class="controls-row">
+        <label class="input-group">
+          <span class="input-label">Ingrese el Código de Productor</span>
+          <input id="input-codigo" type="text" placeholder="Ej: 61295" inputmode="numeric" />
+        </label>
+        <div class="btn-group">
+          <button class="btn primary" onclick="buscarProductor()">Buscar</button>
+          <button class="btn ghost" onclick="exportarPDF()">Crear PDF</button>
+        </div>
+      </div>
+      <p class="hint">
+        Importante: para generar el PDF se utiliza la vista actual de la ficha.
+      </p>
+    </section>
+
+    <!-- Ficha resultado -->
+    <section id="resultado" class="card ficha">
+      <!-- Se completa por JS -->
+      <div class="placeholder">Ingresá un código para ver la ficha…</div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <small>Versión demo • Uso interno</small>
+  </footer>
+
+  <!-- Librerías -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
