@@ -63,3 +63,13 @@ async function exportarPDF(){
   doc.text(lines, margin, margin + 20);
   doc.save("productor.pdf");
 }
+
+.btn.secondary {
+  background: var(--blue-050);
+  color: var(--blue-700);
+  border: 1px solid var(--blue-600);
+}
+.btn.secondary:hover {
+  background: var(--blue-600);
+  color: #fff;
+}
