@@ -64,12 +64,8 @@ async function exportarPDF(){
   doc.save("productor.pdf");
 }
 
-.btn.secondary {
-  background: var(--blue-050);
-  color: var(--blue-700);
-  border: 1px solid var(--blue-600);
-}
-.btn.secondary:hover {
-  background: var(--blue-600);
-  color: #fff;
+function nuevaConsulta(){
+  document.getElementById("input-codigo").value = "";
+  document.getElementById("resultado").innerHTML =
+    `<div class="placeholder">Ingresá un código para ver la ficha…</div>`;
 }
