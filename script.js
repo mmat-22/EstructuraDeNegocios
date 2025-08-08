@@ -1,45 +1,65 @@
 
 let datos = [];
+const JSON_URL = "productores-github.json"; // si luego dividís, apuntá acá a la parte 1 o a un endpoint
 
 async function cargarDatos() {
   try {
-    const response = await fetch('productores-github.json');
-    datos = await response.json();
-    console.log("Datos cargados:", datos);
-  } catch (error) {
-    console.error("Error al cargar el JSON:", error);
+    const r = await fetch(JSON_URL, { cache: "no-store" });
+    datos = await r.json();
+  } catch (e) {
+    console.error("Error cargando datos", e);
   }
 }
+window.onload = cargarDatos;
 
-function buscarProductor() {
-  const codigo = document.getElementById("input-codigo").value.trim();
-  const resultado = datos.find(p => String(p.codigo).trim() === codigo);
+function estadoBadge(estadoRaw){
+  const val = String(estadoRaw || "").trim().toUpperCase();
+  if (val.includes("ACTIVO") && !val.startsWith("IN-")) return `<span class="badge ok">ACTIVO</span>`;
+  if (val.startsWith("IN-")) return `<span class="badge bad">IN-ACTIVO</span>`;
+  return `<span class="badge warn">${estadoRaw ?? "SIN ESTADO"}</span>`;
+}
 
-  const contenedor = document.getElementById("resultado");
-  if (!resultado) {
-    contenedor.innerHTML = "<p>No se encontró el productor.</p>";
-    return;
-  }
+function renderFicha(p){
+  const cont = document.getElementById("resultado");
+  cont.innerHTML = `
+    <div class="ficha-header">
+      <div class="ficha-title">Ficha del productor #${p.codigo ?? p.Codigo ?? "-"}</div>
+      ${estadoBadge(p.estado ?? p.Estado)}
+    </div>
 
-  contenedor.innerHTML = `
-    <p><strong>Código:</strong> ${resultado.codigo}</p>
-    <p><strong>Nombre:</strong> ${resultado.nombre}</p>
-    <p><strong>Nombre de Fantasía:</strong> ${resultado.nombre_fantasia || '-'}</p>
-    <p><strong>Organizador:</strong> ${resultado.organizador || '-'}</p>
-    <p><strong>Unidad Operativa:</strong> ${resultado.unidad_operativa}</p>
-    <p><strong>Código Unidad Operativa:</strong> ${resultado.codigo_unidad_operativa}</p>
-    <p><strong>Ejecutivo:</strong> ${resultado.ejecutivo}</p>
-    <p><strong>Estado:</strong> ${resultado.estado}</p>
+    <div class="dl">
+      <div class="dt">Código:</div><div class="dd">${p.codigo ?? p.Codigo ?? "-"}</div>
+      <div class="dt">Nombre:</div><div class="dd">${p.nombre ?? p.Nombre ?? "-"}</div>
+      <div class="dt">Nombre de Fantasía:</div><div class="dd">${p.nombre_fantasia ?? p["Nombre de Fantasia"] ?? "-"}</div>
+      <div class="dt">Organizador:</div><div class="dd">${p.organizador ?? p["Nombre de Fantasia (Superior)"] ?? "-"}</div>
+      <div class="dt">Unidad Operativa:</div><div class="dd">${p.unidad_operativa ?? p["Unidad Operativa"] ?? "-"}</div>
+      <div class="dt">Código Unidad Operativa:</div><div class="dd">${p.codigo_unidad_operativa ?? p["Codigo de Unidad Operativa"] ?? "-"}</div>
+      <div class="dt">Ejecutivo:</div><div class="dd">${p.ejecutivo ?? p["Ejecutivo de Cuenta Dfl"] ?? "-"}</div>
+      <div class="dt">Estado:</div><div class="dd">${p.estado ?? p.Estado ?? "-"}</div>
+    </div>
   `;
 }
 
-async function exportarPDF() {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-  const contenido = document.getElementById("resultado").innerText;
-  doc.text("Datos del Productor", 10, 10);
-  doc.text(contenido, 10, 20);
-  doc.save("productor.pdf");
+function buscarProductor(){
+  const codigo = document.getElementById("input-codigo").value.trim();
+  const match = datos.find(p => String(p.codigo ?? p.Codigo).trim() === codigo);
+  const cont = document.getElementById("resultado");
+
+  if (!match){
+    cont.innerHTML = `<div class="placeholder">No se encontró el productor.</div>`;
+    return;
+  }
+  renderFicha(match);
 }
 
-window.onload = cargarDatos;
+async function exportarPDF(){
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: "pt", format: "a4" });
+  // Export simple: texto (rápido). Si luego querés exportar “como se ve”, pasamos a html2canvas.
+  const txt = document.getElementById("resultado").innerText || "Sin datos";
+  const margin = 40;
+  const lines = doc.splitTextToSize(txt, 515);
+  doc.text("Ficha de Productor", margin, margin);
+  doc.text(lines, margin, margin + 20);
+  doc.save("productor.pdf");
+}
