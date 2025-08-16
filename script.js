@@ -10,7 +10,10 @@ async function cargarDatos() {
     console.error("Error cargando datos", e);
   }
 }
-window.onload = cargarDatos;
+window.onload = () => {
+  cargarDatos();
+  initComisiones();
+};
 
 function estadoBadge(estadoRaw){
   const val = String(estadoRaw || "").trim().toUpperCase();
@@ -55,17 +58,104 @@ function buscarProductor(){
 async function exportarPDF(){
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ unit: "pt", format: "a4" });
-  // Export simple: texto (rápido). Si luego querés exportar “como se ve”, pasamos a html2canvas.
-  const txt = document.getElementById("resultado").innerText || "Sin datos";
-  const margin = 40;
-  const lines = doc.splitTextToSize(txt, 515);
-  doc.text("Ficha de Productor", margin, margin);
-  doc.text(lines, margin, margin + 20);
+
+  const fichaTxt = (document.getElementById("resultado").innerText || "").trim();
+
+  const c = leerComisiones();
+  const obs = (document.getElementById("observaciones").value || "").trim();
+  const comTxt =
+`COMISIONES
+- Productor: ${fmtPct(c.productor)}
+- Organizador: ${fmtPct(c.organizador)}
+- Otras 1: ${fmtPct(c.otras1)}
+- Otras 2: ${fmtPct(c.otras2)}
+- Total: ${fmtPct(c.productor + c.organizador + c.otras1 + c.otras2)}
+
+OBSERVACIONES
+${obs || "(sin observaciones)"}`
+  .replace(/\n{3,}/g, "\n\n");
+
+  const margin = 48;
+  let y = margin;
+
+  doc.setFontSize(14);
+  doc.text("Ficha de Productor", margin, y); y += 16;
+  doc.setFontSize(11);
+
+  // Ficha (salto automático)
+  const fichaLines = doc.splitTextToSize(fichaTxt, 515);
+  doc.text(fichaLines, margin, y);
+  y += fichaLines.length * 14 + 18;
+
+  // Comisiones
+  doc.setFontSize(14); doc.text("Comisiones y Observaciones", margin, y); y += 16;
+  doc.setFontSize(11);
+  const comLines = doc.splitTextToSize(comTxt, 515);
+  // Nueva página si no entra
+  if (y + comLines.length * 14 > 780){
+    doc.addPage(); y = margin;
+  }
+  doc.text(comLines, margin, y);
+
   doc.save("productor.pdf");
 }
+
 
 function nuevaConsulta(){
   document.getElementById("input-codigo").value = "";
   document.getElementById("resultado").innerHTML =
     `<div class="placeholder">Ingresá un código para ver la ficha…</div>`;
+}
+
+function fmtPct(val){
+  if (isNaN(val)) return "0,00%";
+  return (Math.round(val * 100) / 100).toFixed(2).replace(".", ",") + "%";
+}
+
+function clampPct(n){
+  if (isNaN(n) || n < 0) return 0;
+  if (n > 100) return 100;
+  return n;
+}
+
+function leerComisiones(){
+  const p = parseFloat(document.getElementById("com-productor").value.replace(",", ".")) || 0;
+  const o = parseFloat(document.getElementById("com-organizador").value.replace(",", ".")) || 0;
+  const x1 = parseFloat(document.getElementById("com-otras1").value.replace(",", ".")) || 0;
+  const x2 = parseFloat(document.getElementById("com-otras2").value.replace(",", ".")) || 0;
+  return {
+    productor: clampPct(p),
+    organizador: clampPct(o),
+    otras1: clampPct(x1),
+    otras2: clampPct(x2),
+  };
+}
+
+function actualizarComisiones(){
+  const c = leerComisiones();
+  const total = c.productor + c.organizador + c.otras1 + c.otras2;
+
+  // Resumen
+  document.getElementById("v-productor").textContent   = fmtPct(c.productor);
+  document.getElementById("v-organizador").textContent = fmtPct(c.organizador);
+  document.getElementById("v-otras1").textContent      = fmtPct(c.otras1);
+  document.getElementById("v-otras2").textContent      = fmtPct(c.otras2);
+
+  // Total (ancho cap a 100%)
+  const fill = document.getElementById("total-fill");
+  const text = document.getElementById("total-text");
+  fill.style.width = Math.min(total, 100) + "%";
+  text.textContent = fmtPct(total);
+}
+
+// Inicializa listeners de inputs
+function initComisiones(){
+  ["com-productor","com-organizador","com-otras1","com-otras2"].forEach(id=>{
+    const el = document.getElementById(id);
+    if (el){
+      el.addEventListener("input", actualizarComisiones);
+      el.addEventListener("blur", actualizarComisiones);
+    }
+  });
+  actualizarComisiones();
 }
