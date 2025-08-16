@@ -82,43 +82,62 @@ function buscarProductor(){
 }
 
 // === PDF ===
+
 async function exportarPDF(){
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ unit: "pt", format: "a4" });
 
-  const fichaTxt = (document.getElementById("resultado").innerText || "").trim();
-
-  const c = leerComisiones();
-  const obs = (document.getElementById("observaciones").value || "").trim();
-  const comTxt =
-`COMISIONES
-- Productor: ${fmtPct(c.productor)}
-- Organizador: ${fmtPct(c.organizador)}
-- Otras 1: ${fmtPct(c.otras1)}
-- Otras 2: ${fmtPct(c.otras2)}
-- Total: ${fmtPct(c.productor + c.organizador + c.otras1 + c.otras2)}
-
-OBSERVACIONES
-${obs || "(sin observaciones)"}`.replace(/\n{3,}/g, "\n\n");
-
-  const margin = 48;
+  const margin = 36; // 0.5"
+  const pageW = doc.internal.pageSize.getWidth();
+  const pageH = doc.internal.pageSize.getHeight();
+  const availW = pageW - margin * 2;
+  const gap = 12; // separación entre secciones
   let y = margin;
 
-  doc.setFontSize(14);
-  doc.text("Ficha de Productor", margin, y); y += 16;
-  doc.setFontSize(11);
+  // Renderiza cada sección a imagen manteniendo estilos CSS
+  async function addSectionById(id){
+    const el = document.getElementById(id);
+    if (!el) return;
 
-  const fichaLines = doc.splitTextToSize(fichaTxt, 515);
-  doc.text(fichaLines, margin, y);
-  y += fichaLines.length * 14 + 18;
+    // Asegura fondo blanco para evitar transparencias
+    const canvas = await html2canvas(el, {
+      scale: 2,           // alta resolución
+      useCORS: true,
+      backgroundColor: "#ffffff",
+      scrollY: -window.scrollY
+    });
 
-  doc.setFontSize(14); doc.text("Comisiones y Observaciones", margin, y); y += 16;
-  doc.setFontSize(11);
-  const comLines = doc.splitTextToSize(comTxt, 515);
-  if (y + comLines.length * 14 > 780){
-    doc.addPage(); y = margin;
+    const img = canvas.toDataURL("image/jpeg", 0.95);
+    const imgW = availW;
+    const imgH = canvas.height * (imgW / canvas.width);
+
+    if (y + imgH > pageH - margin) {
+      doc.addPage();
+      y = margin;
+    }
+    doc.addImage(img, "JPEG", margin, y, imgW, imgH);
+    y += imgH + gap;
   }
-  doc.text(comLines, margin, y);
+
+  // Capturamos: primero la ficha, luego comisiones
+  await addSectionById("resultado");
+  await addSectionById("comisiones");
+
+  // Encabezado y pie (todas las páginas)
+  const totalPages = doc.getNumberOfPages();
+  const printed = new Date().toLocaleString("es-AR");
+  for (let i = 1; i <= totalPages; i++) {
+    doc.setPage(i);
+    doc.setFontSize(10);
+    doc.setTextColor(80);
+
+    // Encabezado
+    doc.text("Nación Seguros — Estructura de Negocios", margin, 20);
+
+    // Pie con fecha y numeración
+    doc.text(`Generado: ${printed}`, margin, pageH - 14);
+    doc.text(`Página ${i} de ${totalPages}`, pageW - margin - 90, pageH - 14);
+  }
 
   doc.save("productor.pdf");
 }
