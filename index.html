@@ -53,33 +53,62 @@
 
     <!-- === NUEVO: Comisiones manuales === -->
     <section id="comisiones" class="card comisiones">
-      <h2>Comisiones</h2>
+  <h2>Comisiones</h2>
 
-      <div class="com-grid">
-        <label for="com-productor">Insertar comisiones para el productor:</label>
-        <div class="com-input">
-          <input id="com-productor" type="number" min="0" max="100" step="0.01" value="0" />
-          <span class="pct">%</span>
-        </div>
+  <!-- Fila 1 -->
+  <div class="com-row">
+    <label for="com-productor">Insertar comisiones para el productor :</label>
+    <input id="com-productor" type="number" min="0" max="100" step="0.01" value="0" />
+    <span class="pct">%</span>
+  </div>
 
-        <label for="com-organizador">Insertar comisiones para el Organizador:</label>
-        <div class="com-input">
-          <input id="com-organizador" type="number" min="0" max="100" step="0.01" value="0" />
-          <span class="pct">%</span>
-        </div>
+  <!-- Fila 2 -->
+  <div class="com-row">
+    <label for="com-organizador">Insertar comisiones para el Organizador :</label>
+    <input id="com-organizador" type="number" min="0" max="100" step="0.01" value="0" />
+    <span class="pct">%</span>
+  </div>
 
-        <label for="com-otras1">Insertar otras comisiones :</label>
-        <div class="com-input">
-          <input id="com-otras1" type="number" min="0" max="100" step="0.01" value="0" />
-          <span class="pct">%</span>
-        </div>
+  <!-- Fila 3 -->
+  <div class="com-row">
+    <label for="com-otras1">Insertar otras comisiones :</label>
+    <input id="com-otras1" type="number" min="0" max="100" step="0.01" value="0" />
+    <span class="pct">%</span>
+  </div>
 
-        <label for="com-otras2">Insertar otras comisiones :</label>
-        <div class="com-input">
-          <input id="com-otras2" type="number" min="0" max="100" step="0.01" value="0" />
-          <span class="pct">%</span>
-        </div>
-      </div>
+  <!-- Fila 4 -->
+  <div class="com-row">
+    <label for="com-otras2">Insertar otras comisiones :</label>
+    <input id="com-otras2" type="number" min="0" max="100" step="0.01" value="0" />
+    <span class="pct">%</span>
+  </div>
+
+  <!-- Resumen azul -->
+  <div class="resumen-com">
+    <div class="resumen-row"><span>Productor</span>    <strong id="v-productor">0,00%</strong></div>
+    <div class="resumen-row"><span>Organizador</span>  <strong id="v-organizador">0,00%</strong></div>
+    <div class="resumen-row"><span>Otras 1</span>      <strong id="v-otras1">0,00%</strong></div>
+    <div class="resumen-row"><span>Otras 2</span>      <strong id="v-otras2">0,00%</strong></div>
+  </div>
+
+  <!-- Total -->
+  <div class="total-wrap">
+    <div class="total-label">Total de comisiones</div>
+    <div class="total-bar">
+      <div class="total-fill" id="total-fill" style="width:0%"></div>
+      <div class="total-text" id="total-text">0,00%</div>
+    </div>
+  </div>
+
+  <!-- Observaciones -->
+  <div class="obs">
+    <div class="obs-head">
+      <strong>Observaciones:</strong>
+      <span>texto libre para informar situaciones a tener en cuenta: <strong>EXCLUSIVAMENTE</strong> sobre la información precedente</span>
+    </div>
+    <textarea id="observaciones" rows="5" placeholder="Escriba aquí..."></textarea>
+  </div>
+</section>
 
       <!-- Resumen visual estilo planilla -->
       <div class="resumen-com">

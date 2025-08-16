@@ -72,35 +72,25 @@ async function exportarPDF(){
 - Total: ${fmtPct(c.productor + c.organizador + c.otras1 + c.otras2)}
 
 OBSERVACIONES
-${obs || "(sin observaciones)"}`
-  .replace(/\n{3,}/g, "\n\n");
+${obs || "(sin observaciones)"}`;
 
   const margin = 48;
   let y = margin;
-
-  doc.setFontSize(14);
-  doc.text("Ficha de Productor", margin, y); y += 16;
+  doc.setFontSize(14); doc.text("Ficha de Productor", margin, y); y += 16;
   doc.setFontSize(11);
-
-  // Ficha (salto automático)
   const fichaLines = doc.splitTextToSize(fichaTxt, 515);
   doc.text(fichaLines, margin, y);
   y += fichaLines.length * 14 + 18;
 
-  // Comisiones
   doc.setFontSize(14); doc.text("Comisiones y Observaciones", margin, y); y += 16;
   doc.setFontSize(11);
   const comLines = doc.splitTextToSize(comTxt, 515);
-  // Nueva página si no entra
-  if (y + comLines.length * 14 > 780){
-    doc.addPage(); y = margin;
-  }
+  if (y + comLines.length * 14 > 780){ doc.addPage(); y = margin; }
   doc.text(comLines, margin, y);
 
   doc.save("productor.pdf");
+
 }
-
-
 function nuevaConsulta(){
   document.getElementById("input-codigo").value = "";
   document.getElementById("resultado").innerHTML =
