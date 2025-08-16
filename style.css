@@ -207,4 +207,9 @@ input[type="text"]:focus{border-color:var(--blue-600);box-shadow:0 0 0 3px rgba(
 }
 .com-row .pct{ min-width: 20px; color: var(--muted); }
 
+/* Asegura márgenes coherentes con las otras cards */
+.comisiones{ margin-top:18px; }
+
+/* Evita que algo externo le ponga width completo */
+.comisiones.card{ width:auto; max-width:100%; }
 
