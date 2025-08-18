@@ -41,9 +41,22 @@
       <div class="placeholder">Ingresá un código para ver la ficha…</div>
     </section>
 
-    <!-- === Comisiones manuales (UN SOLO BLOQUE, DENTRO DE <main>) === -->
     <section id="comisiones" class="card comisiones">
-      <h2>Comisiones</h2>
+  <div class="comisiones-head">
+    <h2>Comisiones</h2>
+
+    <!-- Combo de carga manual para OE -->
+    <label class="oe-group" for="input-oe" title="Número de Orden de Emisión">
+      <span>N° de OE</span>
+      <input id="input-oe" list="oe-list" type="text" placeholder="Ej: 367868" inputmode="numeric" />
+      <datalist id="oe-list">
+        <!-- Opcional: podés precargar valores frecuentes -->
+        <!-- <option value="367868" /><option value="367735" /> -->
+      </datalist>
+    </label>
+  </div>
+  <!-- … (resto de la sección tal como está) … -->
+
 
       <!-- Fila 1 -->
       <div class="com-row">
@@ -77,8 +90,8 @@
       <div class="resumen-com">
         <div class="resumen-row"><span>Productor</span>    <strong id="v-productor">0,00%</strong></div>
         <div class="resumen-row"><span>Organizador</span>  <strong id="v-organizador">0,00%</strong></div>
-        <div class="resumen-row"><span>Otras 1</span>      <strong id="v-otras1">0,00%</strong></div>
-        <div class="resumen-row"><span>Otras 2</span>      <strong id="v-otras2">0,00%</strong></div>
+        <div class="resumen-row"><span>Otras 1 (informar codigo en observaciones)</span>      <strong id="v-otras1">0,00%</strong></div>
+        <div class="resumen-row"><span>Otras 2 (informar codigo en observaciones)</span>      <strong id="v-otras2">0,00%</strong></div>
       </div>
 
       <!-- Total -->
@@ -105,12 +118,22 @@
     <small>Versión demo • Uso interno</small>
   </footer>
 
+<!-- Fallback local: base de productores incrustada (opcional).
+     Si probás con file:// y el fetch falla, el script usa este contenido. -->
+<script id="productores-json" type="application/json">
+<!--
+  Pueden pegar aquí TODO el contenido de productores-github.json
+  si quieren que funcione sin servidor local. Si lo dejan vacío,
+  no pasa nada (sólo sirve de fallback).
+-->
+</script>
+
+
   <!-- Librerías y scripts -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="script.js?v=4"></script>
-
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <script src="script.js?v=11"></script>
+  <script src="script.js?v=12"></script>
 
+ 
 </body>
 </html>

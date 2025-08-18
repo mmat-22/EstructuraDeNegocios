@@ -213,3 +213,31 @@ input[type="text"]:focus{border-color:var(--blue-600);box-shadow:0 0 0 3px rgba(
 /* Evita que algo externo le ponga width completo */
 .comisiones.card{ width:auto; max-width:100%; }
 
+/* Encabezado de Comisiones con OE a la derecha */
+.comisiones-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin:0 0 14px;
+}
+.oe-group{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-weight:600;
+  color:var(--text);
+}
+.oe-group input{
+  height:36px;
+  min-width:160px;
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:0 10px;
+  outline:none;
+}
+.oe-group input:focus{
+  border-color:var(--blue-600);
+  box-shadow:0 0 0 3px rgba(0,87,165,.15);
+}
+

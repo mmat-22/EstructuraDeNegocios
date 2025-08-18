@@ -1,24 +1,40 @@
 // === Config ===
 let datos = [];
-const JSON_URL = "productores-github.json"; // mismo nombre
+const JSON_URL = "productores-github.json";
+
+// Promesa reutilizable para asegurar que los datos estén cargados antes de buscar
+let cargaDatosPromise = null;
 
 // === Carga de datos ===
 async function cargarDatos() {
+  // cache buster (cambia cada minuto)
+  const bust = Math.floor(Date.now() / 60000);
   try {
-    const r = await fetch(JSON_URL, { cache: "no-store" });
+    const r = await fetch(`${JSON_URL}?v=${bust}`, { cache: "no-store" });
     if (!r.ok) throw new Error(`No se pudo leer ${JSON_URL}`);
     const json = await r.json();
-    // Acepta array o {data:[...]}
     datos = Array.isArray(json) ? json : (Array.isArray(json.data) ? json.data : []);
-    // console.log("Registros cargados:", datos.length);
+    return datos;
   } catch (e) {
-    console.error("Error cargando datos", e);
+    console.warn("Fetch falló, usando fallback incrustado:", e);
+    const el = document.getElementById("productores-json");
+    if (el && el.textContent.trim()) {
+      try {
+        const json = JSON.parse(el.textContent);
+        datos = Array.isArray(json) ? json : (Array.isArray(json.data) ? json.data : []);
+        return datos;
+      } catch (p) {
+        console.error("JSON incrustado inválido:", p);
+      }
+    }
     datos = [];
+    return datos;
   }
 }
 
 window.onload = () => {
-  cargarDatos();
+  // Disparo la carga UNA sola vez y guardo la promesa para await en buscarProductor()
+  if (!cargaDatosPromise) cargaDatosPromise = cargarDatos();
   initComisiones();
 };
 
@@ -40,7 +56,7 @@ function normalizar(p){
     unidad_operativa: p.unidad_operativa ?? p["Unidad Operativa"] ?? p.uo ?? "-",
     codigo_unidad_operativa: p.codigo_unidad_operativa ?? p["Codigo de Unidad Operativa"] ?? p.uo_codigo ?? "-",
     ejecutivo: p.ejecutivo ?? p["Ejecutivo de Cuenta Dfl"] ?? p.ejecutivo_cuenta ?? "-",
-    estado: p.estado ?? p.Estado ?? "-",
+    estado: p.estado ?? p.Estado ?? "-"
   };
 }
 
@@ -66,13 +82,33 @@ function renderFicha(pRaw){
   `;
 }
 
-function buscarProductor(){
+// === Búsqueda ===
+async function buscarProductor(){
+  // Aseguro que el JSON haya cargado
+  if (!cargaDatosPromise) cargaDatosPromise = cargarDatos();
+  try { await cargaDatosPromise; } catch(e){ /* ya se maneja en cargarDatos */ }
+
+  const cont = document.getElementById("resultado");
+
+  // Si no hay datos, avisamos (para distinguir de "no hay coincidencia")
+  if (!Array.isArray(datos) || datos.length === 0){
+    cont.innerHTML = `
+      <div class="placeholder">
+        No se pudo cargar la base de productores (<code>${JSON_URL}</code>).
+        <br>Revisá que el archivo esté en la misma carpeta que <strong>index.html</strong> y recargá con <strong>Ctrl+F5</strong>.
+      </div>`;
+    return;
+  }
+
   const codigo = (document.getElementById("input-codigo").value || "").trim();
+  const codNum = codigo ? Number(codigo) : NaN;
+
   const match = datos.find(p => {
     const cand = String(p.codigo ?? p.Codigo ?? p.id ?? p.ID ?? "").trim();
-    return cand === codigo;
+    if (cand === codigo) return true; // match exacto por texto
+    const candNum = Number(cand);
+    return !Number.isNaN(candNum) && !Number.isNaN(codNum) && candNum === codNum;
   });
-  const cont = document.getElementById("resultado");
 
   if (!match){
     cont.innerHTML = `<div class="placeholder">No se encontró el productor.</div>`;
@@ -81,8 +117,8 @@ function buscarProductor(){
   renderFicha(match);
 }
 
-// === PDF ===
 
+// === PDF ===
 async function exportarPDF(){
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ unit: "pt", format: "a4" });
@@ -101,7 +137,7 @@ async function exportarPDF(){
 
     // Asegura fondo blanco para evitar transparencias
     const canvas = await html2canvas(el, {
-      scale: 2,           // alta resolución
+      scale: 2,
       useCORS: true,
       backgroundColor: "#ffffff",
       scrollY: -window.scrollY
@@ -130,16 +166,18 @@ async function exportarPDF(){
     doc.setPage(i);
     doc.setFontSize(10);
     doc.setTextColor(80);
-
-    // Encabezado
-    doc.text("Nación Seguros — Estructura de Negocios", margin, 20);
-
-    // Pie con fecha y numeración
-    doc.text(`Generado: ${printed}`, margin, pageH - 14);
+    doc.text("Nación Seguros — Estructura de Negocios", margin, 20); // Encabezado
+    doc.text(`Generado: ${printed}`, margin, pageH - 14);           // Pie
     doc.text(`Página ${i} de ${totalPages}`, pageW - margin - 90, pageH - 14);
   }
 
-  doc.save("productor.pdf");
+  // Nombre del archivo: productor-<codigo> OE <oe>.pdf
+  const codigo = (document.getElementById("input-codigo")?.value || "").trim();
+  const oe     = (document.getElementById("input-oe")?.value || "").trim();
+
+  const base = ["productor", codigo].filter(Boolean).join("-");
+  const oePart = oe ? ` OE ${oe}` : "";
+  doc.save(`${base}${oePart}.pdf`);
 }
 
 // === Comisiones ===
@@ -164,7 +202,7 @@ function leerComisiones(){
     productor: v("com-productor"),
     organizador: v("com-organizador"),
     otras1: v("com-otras1"),
-    otras2: v("com-otras2"),
+    otras2: v("com-otras2")
   };
 }
 function actualizarComisiones(){
