@@ -41,8 +41,12 @@ window.onload = () => {
 // === Utilitarios ===
 function estadoBadge(estadoRaw){
   const val = String(estadoRaw || "").trim().toUpperCase();
-  if (val.includes("ACTIVO") && !val.startsWith("IN-")) return `<span class="badge ok">ACTIVO</span>`;
-  if (val.startsWith("IN-")) return `<span class="badge bad">IN-ACTIVO</span>`;
+  if (val.startsWith("IN") && val.includes("ACTIVO")) {
+    return `<span class="badge bad">INACTIVO</span>`;
+  }
+  if (val.includes("ACTIVO")) {
+    return `<span class="badge ok">ACTIVO</span>`;
+  }
   return `<span class="badge warn">${estadoRaw ?? "SIN ESTADO"}</span>`;
 }
 
